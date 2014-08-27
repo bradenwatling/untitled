@@ -19,7 +19,6 @@ class SpriteAnimation extends Sprite {
     private var mFirstIndex:Int;
     private var mLastIndex:Int;
     private var mHorizontal:Bool;
-    private var mPaused:Bool = true;
     private var mTimer:Timer;
 
     public function init(image:BitmapData, horizontalFrames:Int, verticalFrames:Int,
@@ -63,16 +62,16 @@ class SpriteAnimation extends Sprite {
         mLastIndex = lastFrame;
     }
 
-    public function pause() {
-        mPaused = true;
-    }
-
-    public function resume() {
-        mPaused = false;
-    }
-
-    public function stop() {
+    public function pauseAnimation() {
         mTimer.stop();
+    }
+
+    public function resumeAnimation() {
+        mTimer.start();
+    }
+
+    public function resetAnimation() {
+        mCurrentIndex = mFirstIndex;
     }
 
     public function showFrame(index:Int) {
@@ -89,13 +88,11 @@ class SpriteAnimation extends Sprite {
     }
 
     private function update(event:TimerEvent):Void {
-        if (!mPaused) {
-            mCurrentIndex++;
-            if (mCurrentIndex > mLastIndex) {
-                mCurrentIndex = mFirstIndex;
-            }
-
-            showFrame(mCurrentIndex);
+        mCurrentIndex++;
+        if (mCurrentIndex > mLastIndex) {
+            mCurrentIndex = mFirstIndex;
         }
+
+        showFrame(mCurrentIndex);
     }
 }

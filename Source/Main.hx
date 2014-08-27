@@ -11,6 +11,7 @@ class Main extends Sprite {
 
     private var mLevel:Level;
     private var mPlayer:SpriteAnimation;
+    private var mPlayerMoveTimer:Timer;
 
     public function new() {
         super();
@@ -22,8 +23,8 @@ class Main extends Sprite {
 
         mPlayer = new SpriteAnimation();
         mPlayer.init(Assets.getBitmapData("assets/spritesheet.png"), 13, 84, 3, 12);
-        mPlayer.width = 200;
-        mPlayer.height = 200;
+        mPlayer.width = 100;
+        mPlayer.height = 100;
         stopMoving();
 
         addChild(mPlayer);
@@ -35,23 +36,28 @@ class Main extends Sprite {
         var currentPosition = 0;
         var currentMove:Array<Point> = mLevel.mCurrentMove;
         if (currentMove != null) {
-            var timer = new Timer(20);
-            timer.addEventListener(TimerEvent.TIMER, function(event:TimerEvent) {
+            mPlayer.resumeAnimation();
+            if (mPlayerMoveTimer != null) {
+                mPlayerMoveTimer.stop();
+            }
+            mPlayerMoveTimer = new Timer(30);
+            mPlayerMoveTimer.addEventListener(TimerEvent.TIMER, function(event:TimerEvent) {
                 if (currentPosition < currentMove.length) {
                     var currentPoint = currentMove[currentPosition];
                     mPlayer.x = currentPoint.x - mPlayer.width / 2;
                     mPlayer.y = currentPoint.y - mPlayer.height / 2;
                     currentPosition++;
                 } else {
-                    timer.stop();
+                    mPlayerMoveTimer.stop();
+                    stopMoving();
                 }
             });
-            timer.start();
+            mPlayerMoveTimer.start();
         }
     }
 
     private function stopMoving() {
-        mPlayer.pause();
+        mPlayer.pauseAnimation();
         mPlayer.showFrame(0);
     }
 }
