@@ -1,63 +1,57 @@
 package;
 
+import flash.geom.Point;
+import flash.events.TimerEvent;
+import openfl.utils.Timer;
 import flash.display.Sprite;
 import flash.events.MouseEvent;
-import motion.Actuate;
 import openfl.Assets;
 
 class Main extends Sprite {
 
-    private var mSpriteAnimation:SpriteAnimation;
+    private var mLevel:Level;
+    private var mPlayer:SpriteAnimation;
 
     public function new() {
         super();
 
-        mSpriteAnimation = new SpriteAnimation();
-        mSpriteAnimation.init(Assets.getBitmapData("assets/spritesheet_2.png"), 13, 84, 3, 12);
-        mSpriteAnimation.width = 200;
-        mSpriteAnimation.height = 200;
+        mLevel = new Level();
+        mLevel.width = width;
+        mLevel.height = height;
+        addChild(mLevel);
+
+        mPlayer = new SpriteAnimation();
+        mPlayer.init(Assets.getBitmapData("assets/spritesheet.png"), 13, 84, 3, 12);
+        mPlayer.width = 200;
+        mPlayer.height = 200;
         stopMoving();
 
-        addChild(mSpriteAnimation);
+        addChild(mPlayer);
 
-        stage.addEventListener(MouseEvent.MOUSE_DOWN, stage_onMouseDown);
-        stage.addEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
+        mPlayer.addEventListener(MouseEvent.MOUSE_DOWN, player_onMouseDown);
+    }
+
+    private function player_onMouseDown(event:MouseEvent) {
+        var currentPosition = 0;
+        var currentMove:Array<Point> = mLevel.mCurrentMove;
+        if (currentMove != null) {
+            var timer = new Timer(20);
+            timer.addEventListener(TimerEvent.TIMER, function(event:TimerEvent) {
+                if (currentPosition < currentMove.length) {
+                    var currentPoint = currentMove[currentPosition];
+                    mPlayer.x = currentPoint.x - mPlayer.width / 2;
+                    mPlayer.y = currentPoint.y - mPlayer.height / 2;
+                    currentPosition++;
+                } else {
+                    timer.stop();
+                }
+            });
+            timer.start();
+        }
     }
 
     private function stopMoving() {
-        mSpriteAnimation.pause();
-        mSpriteAnimation.showFrame(0);
-    }
-
-    private function stage_onMouseDown(event:MouseEvent):Void {
-        var distance = distance(mSpriteAnimation.x, mSpriteAnimation.y, event.stageX, event.stageY);
-        Actuate.stop(mSpriteAnimation);
-        Actuate.tween(mSpriteAnimation, distance / 250, { x: event.stageX - mSpriteAnimation.width / 2,
-                y: event.stageY - mSpriteAnimation.height / 2 })
-                .onUpdate(drawLineToMouse).onComplete(stopMoving);
-
-        mSpriteAnimation.resume();
-    }
-
-    private function stage_onMouseMove(event:MouseEvent = null):Void {
-        drawLineToMouse();
-    }
-
-    private function stage_onMouseUp(event:MouseEvent):Void {
-        stage.removeEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
-        stage.removeEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
-    }
-
-    private function drawLineToMouse():Void {
-        graphics.clear();
-        graphics.lineStyle(2);
-        graphics.beginFill(0xFFFFFF, 0.1);
-        graphics.moveTo(mSpriteAnimation.x + mSpriteAnimation.width / 2, mSpriteAnimation.y + mSpriteAnimation.height / 2);
-        graphics.lineTo(mouseX, mouseY);
-        graphics.endFill();
-    }
-
-    private static function distance(x1:Float, y1:Float, x2:Float, y2:Float):Float {
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        mPlayer.pause();
+        mPlayer.showFrame(0);
     }
 }
